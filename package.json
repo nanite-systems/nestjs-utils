@@ -1,6 +1,6 @@
 {
   "name": "@census-reworked/nestjs-utils",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "NestJs utilities used in the Census Reworked project.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
