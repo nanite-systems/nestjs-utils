@@ -20,6 +20,7 @@ export async function configBuilder<T extends object>(
   // Transform the base instance
   const instance = plainToInstance(config, base, {
     excludeExtraneousValues: true,
+    exposeDefaultValues: true,
   });
 
   try {

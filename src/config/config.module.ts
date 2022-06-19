@@ -1,30 +1,18 @@
-import {
-  DynamicModule,
-  FactoryProvider,
-  Global,
-  Module,
-  Type,
-} from '@nestjs/common';
+import { DynamicModule, FactoryProvider, Module, Type } from '@nestjs/common';
 import { configBuilder } from './config.builder';
-import { ConfigOptions } from './config.options';
-import { ConfigCoreModule } from './config-core.module';
+import { expand } from 'dotenv-expand';
+import { config, DotenvConfigOptions } from 'dotenv';
 
 @Module({})
-@Global()
 export class ConfigModule {
-  static forRoot(options?: ConfigOptions): DynamicModule {
-    return {
-      module: ConfigModule,
-      imports: [ConfigCoreModule.forRoot(options)],
-      providers: this.getProviders(options?.configurations ?? []),
-      exports: options?.configurations,
-    };
+  static forRoot(options?: DotenvConfigOptions): void {
+    expand(config(options));
   }
 
-  static forFeature(configurations: Type[]): DynamicModule {
+  static forFeature(configurations: Type<object>[]): DynamicModule {
     return {
       module: ConfigModule,
-      providers: this.getProviders(configurations),
+      providers: [...this.getProviders(configurations)],
       exports: [...configurations],
     };
   }
