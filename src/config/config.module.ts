@@ -2,53 +2,37 @@ import {
   DynamicModule,
   FactoryProvider,
   Global,
-  Inject,
   Module,
-  OnModuleInit,
   Type,
 } from '@nestjs/common';
-import { config } from 'dotenv';
-import { expand } from 'dotenv-expand';
 import { configBuilder } from './config.builder';
 import { ConfigOptions } from './config.options';
-
-const CONFIG_OPTIONS = Symbol('provide:config_options');
+import { ConfigCoreModule } from './config-core.module';
 
 @Module({})
 @Global()
-export class ConfigModule implements OnModuleInit {
-  static forRoot(options: ConfigOptions): DynamicModule {
+export class ConfigModule {
+  static forRoot(options?: ConfigOptions): DynamicModule {
     return {
       module: ConfigModule,
-      providers: [
-        {
-          provide: CONFIG_OPTIONS,
-          useValue: options,
-        },
-      ],
+      imports: [ConfigCoreModule.forRoot(options)],
+      providers: this.getProviders(options?.configurations ?? []),
+      exports: options?.configurations,
     };
   }
 
   static forFeature(configurations: Type[]): DynamicModule {
-    const configProviders: FactoryProvider[] = configurations.map(
-      (configuration) => ({
-        provide: configuration,
-        useFactory: () => configBuilder(configuration),
-      }),
-    );
-
     return {
       module: ConfigModule,
-      providers: [...configProviders],
+      providers: this.getProviders(configurations),
       exports: [...configurations],
     };
   }
 
-  constructor(
-    @Inject(CONFIG_OPTIONS) private readonly options: ConfigOptions,
-  ) {}
-
-  onModuleInit(): void {
-    expand(config(this.options));
+  private static getProviders(configurations: Type[]): FactoryProvider[] {
+    return configurations.map((configuration) => ({
+      provide: configuration,
+      useFactory: () => configBuilder(configuration),
+    }));
   }
 }
